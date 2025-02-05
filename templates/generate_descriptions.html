@@ -1,0 +1,48 @@
+{# generate_descriptions.html #}
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4">
+    <h1 class="text-3xl font-bold mb-8 text-center">Generate Descriptions</h1>
+    
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for image in images %}
+            <div class="border rounded p-4">
+                <img src="{{ url_for('static', filename='gallery/artworks/' + image) }}"
+                     alt="{{ image }}"
+                     class="w-full h-48 object-cover mb-4">
+                <button onclick="generateDescription('{{ image }}')"
+                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Generate Description
+                </button>
+                <div class="description-result mt-4 hidden"></div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+async function generateDescription(imageName) {
+    const button = event.target;
+    const resultDiv = button.nextElementSibling;
+    
+    try {
+        const response = await fetch(`/generate_description/${imageName}`, {
+            method: 'POST'
+        });
+        const data = await response.json();
+
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        resultDiv.textContent = data.description;
+        resultDiv.classList.remove('hidden');
+    } catch (error) {
+        alert('Error generating description');
+    }
+}
+</script>
+{% endblock %}

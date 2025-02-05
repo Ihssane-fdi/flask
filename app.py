@@ -333,25 +333,25 @@ ml_processor = MLProcessor(app)
 
 
 # Add these routes to app.py
-@app.route('/ml', methods=['GET'])
-def ml_page():
-    """Display ML features page"""
-    # Get list of available images for style transfer
+@app.route('/generate_descriptions')
+def generate_descriptions_page():
+    """Display description generation page"""
     artwork_files = []
     if os.path.exists(app.config['ARTWORK_FOLDER']):
         artwork_files = [f for f in os.listdir(app.config['ARTWORK_FOLDER'])
                          if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
-    # Get ML-generated outputs
-    ml_outputs = []
-    if os.path.exists(ml_processor.ml_output_dir):
-        ml_outputs = [f for f in os.listdir(ml_processor.ml_output_dir)
-                      if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    return render_template('generate_descriptions.html', images=artwork_files)
 
-    return render_template('ml.html',
-                           images=artwork_files,
-                           ml_outputs=ml_outputs)
+@app.route('/style_transfer')
+def style_transfer_page():
+    """Display style transfer page"""
+    artwork_files = []
+    if os.path.exists(app.config['ARTWORK_FOLDER']):
+        artwork_files = [f for f in os.listdir(app.config['ARTWORK_FOLDER'])
+                         if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
+    return render_template('style_transfer.html', images=artwork_files)
 
 @app.route('/generate_description/<image_name>', methods=['POST'])
 def generate_description(image_name):
@@ -392,5 +392,6 @@ def style_transfer():
     except Exception as e:
         print(f"Style transfer error: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)
