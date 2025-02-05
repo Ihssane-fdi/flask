@@ -1,0 +1,83 @@
+{# effects_select.html #}
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-center">Image Effects Gallery</h1>
+    
+    <!-- Upload Form -->
+    <div class="mb-8 bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold mb-4">Upload Your Image</h2>
+        {% if message %}
+        <div class="mb-4 p-4 {% if 'Error' in message %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %} rounded">
+            {{ message }}
+        </div>
+        {% endif %}
+        <form action="{{ url_for('effects_page') }}" method="post" enctype="multipart/form-data" class="space-y-4">
+            <div class="flex items-center space-x-4">
+                <input type="file"
+                       name="file"
+                       accept=".png,.jpg,.jpeg,.gif"
+                       class="block w-full text-sm text-gray-500
+                              file:mr-4 file:py-2 file:px-4
+                              file:rounded-full file:border-0
+                              file:text-sm file:font-semibold
+                              file:bg-purple-50 file:text-purple-700
+                              hover:file:bg-purple-100">
+                <button type="submit"
+                        class="bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600">
+                    Upload & Apply Effects
+                </button>
+            </div>
+            <p class="text-sm text-gray-500">Supported formats: PNG, JPG, JPEG, GIF</p>
+        </form>
+    </div>
+
+    <!-- Available Effects -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Available Effects</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {% for effect_name, effect_data in effects.items() %}
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h3 class="font-semibold text-lg">{{ effect_data.title }}</h3>
+                <p class="text-sm text-gray-600">{{ effect_data.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Gallery -->
+    {% if images %}
+        <h2 class="text-2xl font-semibold mb-6">Recent Images</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for image in images %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <img src="{{ url_for('static', filename='gallery/artworks/' + image) }}"
+                     alt="Image"
+                     class="w-full h-64 object-cover">
+                <div class="p-4">
+                    <h2 class="text-xl font-semibold mb-4 truncate">{{ image }}</h2>
+                    <div class="flex space-x-2">
+                        <a href="{{ url_for('image_effects', image_name=image) }}"
+                           class="flex-1 bg-purple-500 text-white text-center px-4 py-2 rounded hover:bg-purple-600">
+                            Apply Effects
+                        </a>
+                        <form action="{{ url_for('delete_artwork', artwork=image) }}"
+                              method="POST"
+                              class="inline">
+                            <button type="submit"
+                                    class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center bg-white p-8 rounded-lg shadow-md">
+            <p class="text-gray-600">No images in the gallery yet. Upload an image to get started!</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

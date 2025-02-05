@@ -1,0 +1,144 @@
+{# ml.html #}
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4">
+    <h1 class="text-3xl font-bold mb-8 text-center">Machine Learning Features</h1>
+    
+    <!-- Style Transfer Section -->
+    <div class="mb-12">
+        <h2 class="text-2xl font-semibold mb-6">Style Transfer</h2>
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <form id="styleTransferForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-gray-700 mb-2">Content Image</label>
+                        <select name="content_image" class="w-full p-2 border rounded">
+                            {% for image in images %}
+                            <option value="{{ image }}">{{ image }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-2">Style Image</label>
+                        <select name="style_image" class="w-full p-2 border rounded">
+                            {% for image in images %}
+                            <option value="{{ image }}">{{ image }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                    Apply Style Transfer
+                </button>
+            </form>
+            <div id="styleTransferResult" class="mt-6 hidden">
+                <h3 class="text-lg font-semibold mb-4">Result</h3>
+                <img id="styleOutput" src="" alt="Style Transfer Result" class="max-w-full h-auto">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Text Generation Section -->
+    <div class="mb-12">
+        <h2 class="text-2xl font-semibold mb-6">Generate Descriptions</h2>
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for image in images %}
+                <div class="border rounded p-4">
+                    <img src="{{ url_for('static', filename='gallery/artworks/' + image) }}"
+                         alt="{{ image }}"
+                         class="w-full h-48 object-cover mb-4">
+                    <button onclick="generateDescription('{{ image }}')"
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        Generate Description
+                    </button>
+                    <div class="description-result mt-4 hidden"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- ML Outputs Gallery -->
+    {% if ml_outputs %}
+    <div>
+        <h2 class="text-2xl font-semibold mb-6">Generated Outputs</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for output in ml_outputs %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <img src="{{ url_for('static', filename='gallery/ml_output/' + output) }}"
+                     alt="ML Output"
+                     class="w-full h-64 object-cover">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('styleTransferForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const submitButton = e.target.querySelector('button[type="submit"]');
+
+    try {
+        // Show loading state
+        submitButton.disabled = true;
+        submitButton.textContent = 'Processing... This may take a few minutes';
+
+        const response = await fetch('/style_transfer', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        // Show the result
+        document.getElementById('styleOutput').src = data.output_image;
+        document.getElementById('styleTransferResult').classList.remove('hidden');
+
+        // Show success message
+        alert(data.message);
+
+        // Refresh the gallery section if it exists
+        if (window.location.pathname === '/gallery') {
+            window.location.reload();
+        }
+
+    } catch (error) {
+        alert('Error applying style transfer');
+    } finally {
+        // Reset button state
+        submitButton.disabled = false;
+        submitButton.textContent = 'Apply Style Transfer';
+    }
+});
+
+async function generateDescription(imageName) {
+    const button = event.target;
+    const resultDiv = button.nextElementSibling;
+    
+    try {
+        const response = await fetch(`/generate_description/${imageName}`, {
+            method: 'POST'
+        });
+        const data = await response.json();
+        
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+        
+        resultDiv.textContent = data.description;
+        resultDiv.classList.remove('hidden');
+    } catch (error) {
+        alert('Error generating description');
+    }
+}
+</script>
+{% endblock %}

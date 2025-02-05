@@ -1,0 +1,73 @@
+{# gallery.html #}
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4">
+    <h1 class="text-3xl font-bold mb-8 text-center">Art Gallery</h1>
+
+    {% if artworks or visualizations %}
+        {% if artworks %}
+        <div class="mb-12">
+            <h2 class="text-2xl font-semibold mb-6">Artwork Collection</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for artwork in artworks %}
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <img src="{{ url_for('static', filename='gallery/artworks/' + artwork) }}"
+                         alt="Artwork"
+                         class="w-full h-64 object-cover">
+                    <div class="p-4">
+                        <div class="flex justify-between items-center">
+                            <a href="{{ url_for('image_effects', image_name=artwork) }}"
+                               class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                                Apply Effects
+                            </a>
+                            <form action="{{ url_for('delete_artwork', artwork=artwork) }}"
+                                  method="POST"
+                                  class="inline">
+                                <button type="submit"
+                                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if visualizations %}
+        <div>
+            <h2 class="text-2xl font-semibold mb-6">Data Visualizations</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for visualization in visualizations %}
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <img src="{{ url_for('static', filename='gallery/visualizations/' + visualization) }}"
+                         alt="Visualization"
+                         class="w-full h-64 object-cover">
+                    <div class="p-4">
+                        <div class="flex justify-end">
+                            <form action="{{ url_for('delete_visualization', visualization=visualization) }}"
+                                  method="POST">
+                                <button type="submit"
+                                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <p class="text-center text-gray-600">No artwork or visualizations available yet.</p>
+    {% endif %}
+
+    <div class="mt-8 text-center">
+        <a href="/" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Back to Home</a>
+    </div>
+</div>
+{% endblock %}
+

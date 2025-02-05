@@ -1,0 +1,109 @@
+{# audio.html #}
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4">
+    <h1 class="text-3xl font-bold mb-8 text-center">Audio Processing</h1>
+
+    <!-- Upload Form -->
+    <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+        <h2 class="text-xl font-semibold mb-4">Upload Audio</h2>
+        <form action="{{ url_for('process_audio') }}" method="post" enctype="multipart/form-data" class="space-y-4">
+            <div>
+                <label class="block text-gray-700 mb-2">Audio File (WAV or MP3):</label>
+                <input type="file" name="file" accept=".wav,.mp3" required
+                       class="w-full p-2 border rounded">
+                <p class="text-sm text-gray-500 mt-1">Supported formats: WAV, MP3</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">Speed (0.5 - 2.0):</label>
+                    <input type="number" name="speed" value="1.5" min="0.5" max="2.0" step="0.1"
+                           class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Fade In (ms):</label>
+                    <input type="number" name="fade_in" value="1000" min="0"
+                           class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Fade Out (ms):</label>
+                    <input type="number" name="fade_out" value="1000" min="0"
+                           class="w-full p-2 border rounded">
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                Preview Modifications
+            </button>
+        </form>
+    </div>
+
+    <!-- Audio Files -->
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-4">Audio Files</h2>
+        {% if audio_files %}
+            <div class="space-y-6">
+                {% for audio in audio_files %}
+                <div class="border rounded p-4">
+                    <h3 class="font-medium mb-2">{{ audio.filename }}</h3>
+
+                    <!-- Original Audio (only show if not modified) -->
+                    {% if not audio.is_modified %}
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600 mb-1">Original:</p>
+                        <audio controls class="w-full">
+                            <source src="{{ url_for('static', filename='audio/' + audio.filename) }}"
+                                    type="audio/{{ 'mpeg' if audio.filename.lower().endswith('.mp3') else 'wav' }}">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+
+                    <!-- Preview/Modified Version -->
+                    {% if audio.preview %}
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600 mb-1">Preview:</p>
+                        <audio controls class="w-full">
+                            <source src="{{ url_for('static', filename='audio/previews/' + audio.preview) }}"
+                                    type="audio/wav">
+                            Your browser does not support the audio element.
+                        </audio>
+
+                        <div class="mt-2 flex space-x-2">
+                            <a href="{{ url_for('save_modified', filename=audio.preview) }}"
+                               class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Save Modification
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <!-- Modified Audio -->
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600 mb-1">Modified Version:</p>
+                        <audio controls class="w-full">
+                            <source src="{{ url_for('static', filename='audio/' + audio.filename) }}"
+                                    type="audio/wav">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                    {% endif %}
+
+                    <div class="flex justify-end">
+                        <a href="{{ url_for('delete_audio', filename=audio.filename) }}"
+                           class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                            Delete
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600">No audio files available.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,37 @@
+{# base.html #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Art Gallery</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between">
+                <div class="flex space-x-7">
+                    <a href="/" class="flex items-center py-4 px-2">
+                        <span class="font-semibold text-gray-500 text-lg">Art Gallery</span>
+                    </a>
+                    <div class="flex items-center space-x-1">
+                        <a href="/draw" class="py-4 px-2 text-gray-500 hover:text-gray-900">Draw</a>
+                        <a href="/gallery" class="py-4 px-2 text-gray-500 hover:text-gray-900">Gallery</a>
+                        <a href="/effects" class="py-4 px-2 text-gray-500 hover:text-gray-900">Image Effects</a>
+                        <a href="/generate_turtle_art" class="py-4 px-2 text-gray-500 hover:text-gray-900">Generate Turtle Art</a>
+                        <a href="/generate_pygame_art" class="py-4 px-2 text-gray-500 hover:text-gray-900">Generate Pygame Art</a>
+                        <a href="/visualization" class="py-4 px-2 text-gray-500 hover:text-gray-900">Data Visualizations</a>
+                        <a href="/audio" class="py-4 px-2 text-gray-500 hover:text-gray-900">Audio Processing</a>
+                        <a href="/ml" class="py-4 px-2 text-gray-500 hover:text-gray-900">ML Features</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
