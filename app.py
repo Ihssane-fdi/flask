@@ -1,4 +1,5 @@
 #app.py
+import pygame
 from flask import Flask, render_template, request, jsonify, send_file, url_for, redirect
 from pydub import AudioSegment
 from drawing_tool import DrawingTool
@@ -17,11 +18,10 @@ from audio_processor import AudioProcessor
 from ml_processor import MLProcessor
 
 
+
 app = Flask(__name__)
 
 
-app.config['AUDIO_FOLDER'] = os.path.join(app.root_path, 'static', 'audio')
-audio_processor = AudioProcessor(app.config['AUDIO_FOLDER'])
 app.config['ARTWORK_FOLDER'] = os.path.join(app.root_path, 'static', 'gallery', 'artworks')
 app.config['VISUALIZATION_FOLDER'] = os.path.join(app.root_path, 'static', 'gallery', 'visualizations')
 
@@ -107,42 +107,6 @@ def visualization():
     dv = DataVisualization()
     plots = dv.get_all_plots()
     return render_template('visualization.html', plots=plots)
-
-@app.route('/save_visualization', methods=['POST'])
-def save_visualization():
-    image_data = request.form.get('image', '')
-
-    if not image_data.startswith('data:image/png;base64,'):
-        return "Invalid image data", 400
-
-    # Remove the base64 metadata
-    image_data = image_data.replace('data:image/png;base64,', '')
-
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f"visualization_{timestamp}.png"
-    filepath = os.path.join(app.config['VISUALIZATION_FOLDER'], filename)
-
-    try:
-        with open(filepath, 'wb') as f:
-            f.write(base64.b64decode(image_data))
-        print(f"Image saved successfully: {filepath}")  # Log the filepath
-        return redirect(url_for('gallery'))
-    except Exception as e:
-        print(f"Error saving visualization: {e}")  # Log the error
-        return render_template('visualization.html', error=f"Error saving visualization: {e}")
-@app.route('/delete_visualization/<visualization>', methods=['POST'])
-def delete_visualization(visualization):
-    visualization_path = os.path.join(app.config['VISUALIZATION_FOLDER'], visualization)
-    try:
-        if os.path.exists(visualization_path):
-            os.remove(visualization_path)
-        else:
-            print(f"Visualization not found: {visualization}")
-    except Exception as e:
-        print(f"Error deleting visualization: {e}")
-    return redirect(url_for('gallery'))
-
-
 
 
 def validate_image(stream):
@@ -262,9 +226,12 @@ def image_effects(image_name):
 
 # Add these routes to app.py
 
+app.config['AUDIO_FOLDER'] = os.path.join(app.root_path, 'static', 'audio')
+audio_processor = AudioProcessor(app.config['AUDIO_FOLDER'])
+
+
 @app.route('/audio')
 def audio_page():
-    """Display audio processing page"""
     audio_files = audio_processor.get_audio_files()
     return render_template('audio.html', audio_files=audio_files)
 
@@ -275,59 +242,86 @@ def process_audio():
         return redirect(request.url)
 
     file = request.files['file']
-    if file.filename == '':
+    if file.filename == '' or not file:
         return redirect(request.url)
 
-    if file and audio_processor.allowed_file(file.filename):
-        # Save the original file
+    if audio_processor.allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['AUDIO_FOLDER'], filename)
         file.save(filepath)
 
-        # Get processing parameters
-        speed = float(request.form.get('speed', 1.5))
-        fade_in = int(request.form.get('fade_in', 1000))
-        fade_out = int(request.form.get('fade_out', 1000))
+        effects = {
+            'speed': float(request.form.get('speed', 1.0)),
+            'fade_in': int(request.form.get('fade_in', 0)),
+            'fade_out': int(request.form.get('fade_out', 0)),
+            'volume': float(request.form.get('volume', 0)),
+            'reverse': request.form.get('reverse') == 'on',
+            'loop': int(request.form.get('loop', 1))
+        }
 
-        # Process the audio as preview
-        preview_filename, settings = audio_processor.process_audio(
+        preview_filename, _ = audio_processor.process_audio(
             filepath,
-            speed=speed,
-            fade_in=fade_in,
-            fade_out=fade_out,
+            effects=effects,
             save_as_preview=True
         )
 
-        if preview_filename:
-            return redirect(url_for('audio_page'))
+    return redirect(url_for('audio_page'))
 
+
+@app.route('/layer_audio', methods=['POST'])
+def layer_audio():
+    file_ids = request.form.getlist('audio_files')
+    effects_list = []
+
+    for i in range(len(file_ids)):
+        if file_ids[i]:  # Only add effects for selected files
+            effects = {
+                'volume': float(request.form.get(f'volume_{i}', 0)),
+                'speed': float(request.form.get(f'speed_{i}', 1.0)),
+                'loop': int(request.form.get(f'loop_{i}', 1))
+            }
+            effects_list.append(effects)
+
+    output_filename = audio_processor.layer_audio(file_ids, effects_list)
     return redirect(url_for('audio_page'))
 
 
 @app.route('/save_modified/<filename>')
 def save_modified(filename):
-    """Save the preview as a permanent modification"""
     preview_path = os.path.join(app.config['AUDIO_FOLDER'], 'previews', filename)
 
     if os.path.exists(preview_path):
-        # Get original filename without preview suffix
-        original_name = filename.split('_preview_')[0]
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        new_filename = f"{original_name}_modified_{timestamp}.wav"
+        new_filename = f"modified_{timestamp}.wav"
         new_path = os.path.join(app.config['AUDIO_FOLDER'], new_filename)
 
-        # Load and save the audio
         audio = AudioSegment.from_wav(preview_path)
         audio.export(new_path, format="wav")
 
     return redirect(url_for('audio_page'))
 
 
-@app.route('/delete_audio/<filename>')
+@app.route('/delete_audio/<path:filename>')
 def delete_audio(filename):
-    audio_processor.delete_file(filename)
-    return redirect(url_for('audio_page'))
+    try:
+        if filename.startswith('layers/'):
+            filepath = os.path.join(app.config['AUDIO_FOLDER'], 'layers', os.path.basename(filename))
+        else:
+            filepath = os.path.join(app.config['AUDIO_FOLDER'], filename)
 
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
+            # Delete associated previews
+            filename_without_ext = os.path.splitext(os.path.basename(filename))[0]
+            preview_folder = os.path.join(app.config['AUDIO_FOLDER'], 'previews')
+            for preview in os.listdir(preview_folder):
+                if preview.startswith(filename_without_ext + '_preview_'):
+                    os.remove(os.path.join(preview_folder, preview))
+    except Exception as e:
+        print(f"Error deleting file: {e}")
+
+    return redirect(url_for('audio_page'))
 
 ml_processor = MLProcessor(app)
 
@@ -392,6 +386,7 @@ def style_transfer():
     except Exception as e:
         print(f"Style transfer error: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)

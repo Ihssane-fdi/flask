@@ -4,8 +4,21 @@
 <div class="container mx-auto px-4">
     <h1 class="text-3xl font-bold mb-8 text-center">Art Gallery</h1>
 
-    {% if artworks or visualizations %}
-        {% if artworks %}
+    <!-- Modal -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="max-w-4xl w-full mx-4">
+            <div class="relative">
+                <img id="modalImage" src="" alt="Large Artwork" class="w-full h-auto rounded-lg">
+                <button onclick="closeModal()" class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if artworks %}
         <div class="mb-12">
             <h2 class="text-2xl font-semibold mb-6">Artwork Collection</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -13,7 +26,9 @@
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                     <img src="{{ url_for('static', filename='gallery/artworks/' + artwork) }}"
                          alt="Artwork"
-                         class="w-full h-64 object-cover">
+                         class="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                         onclick="openModal('{{ url_for('static', filename='gallery/artworks/' + artwork) }}')"
+                    >
                     <div class="p-4">
                         <div class="flex justify-between items-center">
                             <a href="{{ url_for('image_effects', image_name=artwork) }}"
@@ -34,40 +49,44 @@
                 {% endfor %}
             </div>
         </div>
-        {% endif %}
-
-        {% if visualizations %}
-        <div>
-            <h2 class="text-2xl font-semibold mb-6">Data Visualizations</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {% for visualization in visualizations %}
-                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <img src="{{ url_for('static', filename='gallery/visualizations/' + visualization) }}"
-                         alt="Visualization"
-                         class="w-full h-64 object-cover">
-                    <div class="p-4">
-                        <div class="flex justify-end">
-                            <form action="{{ url_for('delete_visualization', visualization=visualization) }}"
-                                  method="POST">
-                                <button type="submit"
-                                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                                    Delete
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
     {% else %}
-        <p class="text-center text-gray-600">No artwork or visualizations available yet.</p>
+        <p class="text-center text-gray-600">No artwork available yet.</p>
     {% endif %}
 
     <div class="mt-8 text-center">
         <a href="/" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Back to Home</a>
     </div>
 </div>
-{% endblock %}
 
+<script>
+    function openModal(imageSrc) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = imageSrc;
+        modal.classList.remove('hidden');
+
+        // Prevent scrolling on the background
+        document.body.style.overflow = 'hidden';
+
+        // Close modal when clicking outside the image
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Add keyboard support for closing
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('imageModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+</script>
+{% endblock %}

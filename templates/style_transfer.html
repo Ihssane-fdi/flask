@@ -6,27 +6,27 @@
     
     <div class="bg-white rounded-lg shadow-lg p-6">
         <form id="styleTransferForm" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-gray-700 mb-2">Content Image</label>
-                    <select name="content_image" class="w-full p-2 border rounded">
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                        <label class="block text-gray-700 mb-2">Content Image</label>
+                        <select name="content_image" class="w-full p-2 border rounded">
                         {% for image in images %}
                         <option value="{{ image }}">{{ image }}</option>
                         {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-gray-700 mb-2">Style Image</label>
-                    <select name="style_image" class="w-full p-2 border rounded">
+                        </select>
+                  </div>
+                  <div>
+                        <label class="block text-gray-700 mb-2">Style Image</label>
+                        <select name="style_image" class="w-full p-2 border rounded">
                         {% for image in images %}
                         <option value="{{ image }}">{{ image }}</option>
                         {% endfor %}
-                    </select>
-                </div>
-            </div>
-            <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
-                Apply Style Transfer
-            </button>
+                        </select>
+                  </div>
+             </div>
+             <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+             Apply Style Transfer
+             </button>
         </form>
         <div id="styleTransferResult" class="mt-6 hidden">
             <h3 class="text-lg font-semibold mb-4">Result</h3>
@@ -79,3 +79,4 @@ document.getElementById('styleTransferForm').addEventListener('submit', async (e
 });
 </script>
 {% endblock %}
+

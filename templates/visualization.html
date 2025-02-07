@@ -17,11 +17,6 @@
             <div id="choropleth" class="w-full h-96">
                 {{ plots.choropleth | safe }}
             </div>
-            <div class="mt-4 flex justify-center">
-            <button onclick="savePlot('choropleth')" class="mt-4 bg-blue-500 text-white px-4 py-8 rounded hover:bg-blue-600">
-                Save Choropleth Map
-            </button>
-            </div>
         </div>
 
         <!-- Bar Chart -->
@@ -29,11 +24,6 @@
             <h2 class="text-xl font-semibold mb-4">Top 10 Happiest Countries</h2>
             <div id="bar_chart" class="w-full h-96">
                 {{ plots.bar_chart | safe }}
-            </div>
-            <div class="mt-4 flex justify-center">
-            <button onclick="savePlot('bar_chart')" class="mt-4 bg-blue-500 text-white px-4 py-8 rounded hover:bg-blue-600">
-                Save Bar Chart
-            </button>
             </div>
         </div>
 
@@ -43,11 +33,6 @@
             <div id="scatter_plot" class="w-full h-96">
                 {{ plots.scatter_plot | safe }}
             </div>
-            <div class="mt-4 flex justify-center">
-            <button onclick="savePlot('scatter_plot')" class="mt-4 bg-blue-500 text-white px-4 py-8 rounded hover:bg-blue-600">
-                Save Scatter Plot
-            </button>
-            </div>
         </div>
 
         <!-- Animated Scatter Plot -->
@@ -56,49 +41,10 @@
             <div id="animated_scatter_plot" class="w-full h-96">
                 {{ plots.animated_scatter_plot | safe }}
             </div>
-            <div class="mt-4 flex justify-center">
-            <button onclick="savePlot('animated_scatter_plot')" class="mt-4 bg-blue-500 text-white px-4 py-8 rounded hover:bg-blue-600">
-                Save Animated Scatter Plot
-            </button>
-            </div>
         </div>
     </div>
-
-    <!-- Include Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-    <script>
-        // Function to save a plot as an image
-        function savePlot(plotId) {
-    const plotElement = document.getElementById(plotId);
-
-    Plotly.react(plotElement, plotElement.data, plotElement.layout).then(() => {
-        setTimeout(() => {
-    Plotly.toImage(plotElement, {
-        format: 'png',
-        width: 800,
-        height: 600
-    }).then(function(dataUrl) {
-        console.log("Image Data URL:", dataUrl);
-        fetch('/save_visualization', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'image=' + encodeURIComponent(dataUrl)
-        }).then(response => {
-            if (response.ok) {
-                window.location.href = '/gallery';
-            } else {
-                alert('Error saving visualization');
-            }
-        });
-    });
-}, 2000); // Increase the delay to 2 seconds
-    });
-}
-    </script>
 </div>
 {% endblock %}
+
 
 

@@ -5,14 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="774e6cbc-3733-41fe-b57a-1ff2f5835797" name="Changes" comment="initial commit">
-      <change afterPath="$PROJECT_DIR$/templates/generate_descriptions.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/style_transfer.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/audio_processor.py" beforeDir="false" afterPath="$PROJECT_DIR$/audio_processor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/drawing_tool.py" beforeDir="false" afterPath="$PROJECT_DIR$/drawing_tool.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generative.py" beforeDir="false" afterPath="$PROJECT_DIR$/generative.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/image_effects.py" beforeDir="false" afterPath="$PROJECT_DIR$/image_effects.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ml_processor.py" beforeDir="false" afterPath="$PROJECT_DIR$/ml_processor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/audio.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/audio.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/effects.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/effects.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/effects_select.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/effects_select.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/gallery.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/gallery.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/generate_descriptions.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/generate_descriptions.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/ml.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/style_transfer.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/style_transfer.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/visualization.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/visualization.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/visualization.py" beforeDir="false" afterPath="$PROJECT_DIR$/visualization.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,18 +56,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "Ihssane-fdi"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Ihssane-fdi&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Ihssane-fdi/flask.git",
-    "accountId": "27858a0d-2b38-4476-bd27-13f8b50646c0"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Ihssane-fdi/flask.git&quot;,
+    &quot;accountId&quot;: &quot;27858a0d-2b38-4476-bd27-13f8b50646c0&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -121,7 +131,9 @@
       <workItem from="1738610292661" duration="9271000" />
       <workItem from="1738670832413" duration="25475000" />
       <workItem from="1738709461381" duration="242000" />
-      <workItem from="1738761932431" duration="10400000" />
+      <workItem from="1738761932431" duration="11696000" />
+      <workItem from="1738847346423" duration="14320000" />
+      <workItem from="1738942874453" duration="6529000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <option name="closed" value="true" />
@@ -131,7 +143,15 @@
       <option name="project" value="LOCAL" />
       <updated>1738766909822</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="initial commit">
+      <option name="closed" value="true" />
+      <created>1738772495605</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1738772495605</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -142,6 +162,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="initial commit" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/FlaskProject2$FlaskProject2.coverage" NAME="FlaskProject2 Coverage Results" MODIFIED="1738772081740" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/FlaskProject2$FlaskProject2.coverage" NAME="FlaskProject2 Coverage Results" MODIFIED="1738965927541" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

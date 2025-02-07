@@ -1,4 +1,5 @@
 #generative.py
+
 from PIL import Image, ImageDraw
 import random
 import os
