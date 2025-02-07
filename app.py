@@ -256,7 +256,9 @@ def process_audio():
             'fade_out': int(request.form.get('fade_out', 0)),
             'volume': float(request.form.get('volume', 0)),
             'reverse': request.form.get('reverse') == 'on',
-            'loop': int(request.form.get('loop', 1))
+            'loop': int(request.form.get('loop', 1)),
+            'trim_start': int(request.form.get('trim_start', 0)),
+            'trim_end': int(request.form.get('trim_end', 0))
         }
 
         preview_filename, _ = audio_processor.process_audio(

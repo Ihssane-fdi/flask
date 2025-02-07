@@ -46,6 +46,17 @@ class AudioProcessor:
 
         modified = audio
 
+        # Apply trim effect first if specified
+        if 'trim_start' in effects and effects['trim_start'] > 0:
+            start_ms = effects['trim_start']
+            if start_ms < len(modified):
+                modified = modified[start_ms:]
+
+        if 'trim_end' in effects and effects['trim_end'] > 0:
+            end_ms = effects['trim_end']
+            if end_ms < len(modified):
+                modified = modified[:-end_ms]
+
         if 'speed' in effects and effects['speed'] != 1.0:
             modified = modified._spawn(modified.raw_data, overrides={
                 "frame_rate": int(modified.frame_rate * effects['speed'])
