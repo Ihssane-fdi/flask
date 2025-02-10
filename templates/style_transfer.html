@@ -1,82 +1,131 @@
-{# style_transfer.html #}
+{# templates/style_transfer.html #}
 {% extends "base.html" %}
 {% block content %}
-<div class="container mx-auto px-4">
-    <h1 class="text-3xl font-bold mb-8 text-center">Style Transfer</h1>
-    
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-center">Neural Style Transfer</h1>
+
     <div class="bg-white rounded-lg shadow-lg p-6">
         <form id="styleTransferForm" class="space-y-6">
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                        <label class="block text-gray-700 mb-2">Content Image</label>
-                        <select name="content_image" class="w-full p-2 border rounded">
-                        {% for image in images %}
-                        <option value="{{ image }}">{{ image }}</option>
-                        {% endfor %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Content Image</label>
+                        <select name="content_image" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                            {% for image in images %}
+                            <option value="{{ image }}">{{ image }}</option>
+                            {% endfor %}
                         </select>
-                  </div>
-                  <div>
-                        <label class="block text-gray-700 mb-2">Style Image</label>
-                        <select name="style_image" class="w-full p-2 border rounded">
-                        {% for image in images %}
-                        <option value="{{ image }}">{{ image }}</option>
-                        {% endfor %}
+                    </div>
+                    <div id="contentPreview" class="hidden">
+                        <img src="" alt="Content Preview" class="max-w-full h-auto rounded">
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Style Image</label>
+                        <select name="style_image" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                            {% for image in images %}
+                            <option value="{{ image }}">{{ image }}</option>
+                            {% endfor %}
                         </select>
-                  </div>
-             </div>
-             <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
-             Apply Style Transfer
-             </button>
+                    </div>
+                    <div id="stylePreview" class="hidden">
+                        <img src="" alt="Style Preview" class="max-w-full h-auto rounded">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center">
+                <button type="submit"
+                        class="bg-blue-500 text-white px-8 py-3 rounded-lg hover:bg-blue-600
+                               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                               transition-colors duration-200">
+                    Apply Style Transfer
+                </button>
+            </div>
         </form>
-        <div id="styleTransferResult" class="mt-6 hidden">
-            <h3 class="text-lg font-semibold mb-4">Result</h3>
-            <img id="styleOutput" src="" alt="Style Transfer Result" class="max-w-full h-auto">
+
+        <div id="loadingIndicator" class="hidden mt-6 text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p class="mt-4 text-gray-600">Processing... This may take several minutes</p>
+        </div>
+
+        <div id="styleTransferResult" class="mt-8 hidden">
+            <h3 class="text-xl font-semibold mb-4">Result</h3>
+            <div class="bg-gray-50 p-4 rounded">
+                <img id="styleOutput" src="" alt="Style Transfer Result"
+                     class="max-w-full h-auto mx-auto rounded shadow">
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-document.getElementById('styleTransferForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const submitButton = e.target.querySelector('button[type="submit"]');
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('styleTransferForm');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const resultSection = document.getElementById('styleTransferResult');
 
-    try {
-        // Show loading state
-        submitButton.disabled = true;
-        submitButton.textContent = 'Processing... This may take a few minutes';
+    // Preview functionality
+    function updatePreview(selectElement, previewId) {
+        const preview = document.getElementById(previewId);
+        const img = preview.querySelector('img');
+        const selectedImage = selectElement.value;
 
-        const response = await fetch('/style_transfer', {
-            method: 'POST',
-            body: formData
-        });
-        const data = await response.json();
-
-        if (data.error) {
-            alert(data.error);
-            return;
+        if (selectedImage) {
+            img.src = `/static/gallery/artworks/${selectedImage}`;
+            preview.classList.remove('hidden');
         }
-
-        // Show the result
-        document.getElementById('styleOutput').src = data.output_image;
-        document.getElementById('styleTransferResult').classList.remove('hidden');
-
-        // Show success message
-        alert(data.message);
-
-        // Refresh the gallery section if it exists
-        if (window.location.pathname === '/gallery') {
-            window.location.reload();
-        }
-
-    } catch (error) {
-        alert('Error applying style transfer');
-    } finally {
-        // Reset button state
-        submitButton.disabled = false;
-        submitButton.textContent = 'Apply Style Transfer';
     }
+
+    // Update previews when selections change
+    document.querySelector('[name="content_image"]').addEventListener('change', function() {
+        updatePreview(this, 'contentPreview');
+    });
+
+    document.querySelector('[name="style_image"]').addEventListener('change', function() {
+        updatePreview(this, 'stylePreview');
+    });
+
+    // Initial preview load
+    updatePreview(document.querySelector('[name="content_image"]'), 'contentPreview');
+    updatePreview(document.querySelector('[name="style_image"]'), 'stylePreview');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+
+        try {
+            // Show loading state
+            submitButton.disabled = true;
+            loadingIndicator.classList.remove('hidden');
+            resultSection.classList.add('hidden');
+
+            const response = await fetch('/style_transfer', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            // Show the result
+            document.getElementById('styleOutput').src = data.output_image;
+            resultSection.classList.remove('hidden');
+
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+        } finally {
+            // Reset states
+            submitButton.disabled = false;
+            loadingIndicator.classList.add('hidden');
+        }
+    });
 });
 </script>
 {% endblock %}
-

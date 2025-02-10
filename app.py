@@ -1,4 +1,5 @@
 #app.py
+import uuid
 import pygame
 from flask import Flask, render_template, request, jsonify, send_file, url_for, redirect
 from pydub import AudioSegment
@@ -15,8 +16,9 @@ import traceback
 from werkzeug.utils import secure_filename
 import imghdr
 from audio_processor import AudioProcessor
-from ml_processor import MLProcessor
-
+from generate_descriptions import MLProcessor
+import torchvision.transforms as transforms
+from style_transfer import StyleTransfer
 
 
 app = Flask(__name__)
@@ -339,16 +341,6 @@ def generate_descriptions_page():
 
     return render_template('generate_descriptions.html', images=artwork_files)
 
-@app.route('/style_transfer')
-def style_transfer_page():
-    """Display style transfer page"""
-    artwork_files = []
-    if os.path.exists(app.config['ARTWORK_FOLDER']):
-        artwork_files = [f for f in os.listdir(app.config['ARTWORK_FOLDER'])
-                         if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-
-    return render_template('style_transfer.html', images=artwork_files)
-
 @app.route('/generate_description/<image_name>', methods=['POST'])
 def generate_description(image_name):
     """Generate a description for an artwork"""
@@ -363,30 +355,64 @@ def generate_description(image_name):
         return jsonify({'error': str(e)}), 500
 
 
+app.config.update(dict(
+    ARTWORK_FOLDER=os.path.join(app.static_folder, 'gallery', 'artworks'),
+    MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max file size
+    ALLOWED_EXTENSIONS={'.png', '.jpg', '.jpeg'}
+))
+
+
+# Ensure upload folder exists
+os.makedirs(app.config['ARTWORK_FOLDER'], exist_ok=True)
+# Initialize style transfer instance
+style_transfer_model = StyleTransfer()
+
+
+@app.route('/style_transfer')
+def style_transfer_page():
+    """Display style transfer page"""
+    artwork_files = []
+    if os.path.exists(app.config['ARTWORK_FOLDER']):
+        artwork_files = [f for f in os.listdir(app.config['ARTWORK_FOLDER'])
+                         if os.path.splitext(f.lower())[1] in app.config['ALLOWED_EXTENSIONS']]
+
+    return render_template('style_transfer.html', images=artwork_files)
+
+
 @app.route('/style_transfer', methods=['POST'])
-def style_transfer():
-    """Apply style transfer to an image and save to gallery"""
-    if 'content_image' not in request.form or 'style_image' not in request.form:
-        return jsonify({'error': 'Missing images'}), 400
-
-    content_image = request.form['content_image']
-    style_image = request.form['style_image']
-
-    content_path = os.path.join(app.config['ARTWORK_FOLDER'], content_image)
-    style_path = os.path.join(app.config['ARTWORK_FOLDER'], style_image)
-
+def apply_style_transfer():
+    """Apply style transfer to images"""
     try:
-        # Apply style transfer and get filename
-        output_filename = ml_processor.apply_style_transfer(content_path, style_path)
+        if 'content_image' not in request.form or 'style_image' not in request.form:
+            return jsonify({'error': 'Missing required images'}), 400
 
-        # Return both the image URL and filename for gallery update
+        content_image = secure_filename(request.form['content_image'])
+        style_image = secure_filename(request.form['style_image'])
+
+        content_path = os.path.join(app.config['ARTWORK_FOLDER'], content_image)
+        style_path = os.path.join(app.config['ARTWORK_FOLDER'], style_image)
+
+        # Validate files exist
+        if not (os.path.exists(content_path) and os.path.exists(style_path)):
+            return jsonify({'error': 'One or more images not found'}), 404
+
+        # Apply style transfer using the instance
+        result = style_transfer_model.style_transfer(content_path, style_path)
+
+        # Convert to PIL Image and save
+        result_img = transforms.ToPILImage()(result)
+        output_filename = f"style_transfer_{uuid.uuid4().hex[:8]}.png"
+        output_path = os.path.join(app.config['ARTWORK_FOLDER'], output_filename)
+        result_img.save(output_path)
+
         return jsonify({
-            'output_image': url_for('static', filename=f'gallery/artworks/{output_filename}'),
+            'output_image': url_for('static',
+                                    filename=f'gallery/artworks/{output_filename}'),
             'filename': output_filename,
             'message': 'Style transfer complete! The image has been added to your gallery.'
         })
+
     except Exception as e:
-        print(f"Style transfer error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 
