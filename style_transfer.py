@@ -1,39 +1,78 @@
-# style_transfer.py
 import torch
-import torch.nn.functional as F
+import torch.nn as nn
 import torchvision.transforms as transforms
 import torchvision.models as models
 from PIL import Image
+from torch.cuda.amp import autocast, GradScaler
+import os
+import warnings
+
+warnings.filterwarnings("ignore")
+
+
+class StyleTransferModel(nn.Module):
+    def __init__(self):
+        super(StyleTransferModel, self).__init__()
+        # Load pretrained VGG19 model
+        vgg19 = models.vgg19(weights=models.VGG19_Weights.DEFAULT).features
+
+        # Split VGG19 into sections for content and style
+        self.conv1_1 = nn.Sequential(*list(vgg19.children())[:2])
+        self.conv2_1 = nn.Sequential(*list(vgg19.children())[2:7])
+        self.conv3_1 = nn.Sequential(*list(vgg19.children())[7:12])
+        self.conv4_1 = nn.Sequential(*list(vgg19.children())[12:21])
+        self.conv5_1 = nn.Sequential(*list(vgg19.children())[21:30])
+
+        # Freeze all parameters
+        for param in self.parameters():
+            param.requires_grad = False
+
+    def forward(self, x):
+        features = []
+        x = self.conv1_1(x)
+        features.append(x)
+        x = self.conv2_1(x)
+        features.append(x)
+        x = self.conv3_1(x)
+        features.append(x)
+        x = self.conv4_1(x)
+        features.append(x)
+        x = self.conv5_1(x)
+        features.append(x)
+        return features
 
 
 class StyleTransfer:
     def __init__(self, device='cuda' if torch.cuda.is_available() else 'cpu'):
         self.device = device
-        self.vgg = models.vgg19(weights=models.VGG19_Weights.IMAGENET1K_V1).features.to(device).eval()
+        self.model = StyleTransferModel().to(device).eval()
 
-        # Freeze VGG parameters
-        for param in self.vgg.parameters():
-            param.requires_grad_(False)
+        # Image preprocessing
+        self.transform = transforms.Compose([
+            transforms.Resize(256),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+        ])
 
-        # Mean and std for image normalization
-        self.mean = torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1).to(device)
-        self.std = torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1).to(device)
+        # Image deprocessing
+        self.denormalize = transforms.Compose([
+            transforms.Normalize(mean=[0, 0, 0],
+                                 std=[1 / 0.229, 1 / 0.224, 1 / 0.225]),
+            transforms.Normalize(mean=[-0.485, -0.456, -0.406],
+                                 std=[1, 1, 1]),
+        ])
 
-        # Define the layer mapping for features
-        self.content_layers_map = {'21': 'conv_4'}  # conv4_2
-        self.style_layers_map = {
-            '0': 'conv_1',  # conv1_1
-            '5': 'conv_2',  # conv2_1
-            '10': 'conv_3',  # conv3_1
-            '19': 'conv_4',  # conv4_1
-            '28': 'conv_5'  # conv5_1
+        # Style weights for different layers
+        self.style_weights = {
+            'conv1_1': 1.0,
+            'conv2_1': 0.8,
+            'conv3_1': 0.5,
+            'conv4_1': 0.3,
+            'conv5_1': 0.1
         }
 
-        # Content and style layers
-        self.content_layers = list(self.content_layers_map.values())
-        self.style_layers = list(self.style_layers_map.values())
-
-        # Weights for loss
+        # Content weight
         self.content_weight = 1
         self.style_weight = 1e6
 
@@ -48,118 +87,80 @@ class StyleTransfer:
                 new_size = tuple(int(dim * ratio) for dim in image.size)
                 image = image.resize(new_size, Image.LANCZOS)
 
-            # Transform to tensor
-            transform = transforms.Compose([
-                transforms.ToTensor()
-            ])
-
-            # Move tensor to device and add batch dimension
-            image = transform(image).unsqueeze(0).to(self.device)
+            # Transform and add batch dimension
+            image = self.transform(image).unsqueeze(0).to(self.device)
             return image
         except Exception as e:
             raise Exception(f"Error loading image {image_path}: {str(e)}")
 
-    def preprocess(self, image):
-        """Normalize image"""
-        image = (image - self.mean) / self.std
-        return image
-
-    def deprocess(self, image):
-        """Denormalize image"""
-        image = image * self.std + self.mean
-        image = image.clamp_(0, 1)
-        return image
-
-    def get_features(self, image, model):
-        """Extract features from specified layers"""
-        features = {}
-        x = image
-
-        # Loop through model layers and collect features
-        for name, layer in model._modules.items():
-            x = layer(x)
-
-            # Check if current layer is a content layer
-            if name in self.content_layers_map:
-                features[self.content_layers_map[name]] = x
-
-            # Check if current layer is a style layer
-            if name in self.style_layers_map:
-                features[self.style_layers_map[name]] = x
-
-        return features
-
     def gram_matrix(self, tensor):
-        """Calculate Gram matrix"""
+        """Calculate Gram Matrix"""
         b, c, h, w = tensor.size()
-        tensor = tensor.view(b * c, h * w)
-        gram = torch.mm(tensor, tensor.t())
-        return gram.div_(h * w)
+        features = tensor.view(b, c, h * w)
+        gram = torch.bmm(features, features.transpose(1, 2))
+        return gram.div(c * h * w)
 
-    def style_transfer(self, content_path, style_path, num_steps=300):
-        """Perform style transfer"""
+    def style_transfer(self, content_path, style_path, num_steps=500, content_weight=1, style_weight=1e6):
+        """Perform neural style transfer"""
         try:
-            # Load and preprocess images
-            content = self.load_image(content_path)
-            style = self.load_image(style_path)
+            # Load images
+            content_img = self.load_image(content_path)
+            style_img = self.load_image(style_path)
 
-            # Preprocess images
-            content = self.preprocess(content)
-            style = self.preprocess(style)
+            # Initialize target image
+            target = content_img.clone().requires_grad_(True)
 
-            # Initialize target image with content image
-            target = content.clone().requires_grad_(True)
+            # Compute style features
+            style_features = self.model(style_img)
+            style_grams = [self.gram_matrix(feat) for feat in style_features]
 
-            # Get features
-            with torch.no_grad():
-                content_features = self.get_features(content, self.vgg)
-                style_features = self.get_features(style, self.vgg)
-                style_grams = {layer: self.gram_matrix(style_features[layer])
-                               for layer in self.style_layers}
+            # Content features (using conv4_1)
+            content_features = self.model(content_img)[3].detach()
 
             # Optimizer
-            optimizer = torch.optim.Adam([target], lr=0.01)
+            optimizer = torch.optim.LBFGS([target])
 
             # Style transfer loop
-            for step in range(num_steps):
+            run = [0]
+            while run[0] <= num_steps:
+
                 def closure():
-                    # Zero gradients
                     optimizer.zero_grad()
 
-                    # Get current target features
-                    target_features = self.get_features(target, self.vgg)
+                    # Get current features
+                    target_features = self.model(target)
 
                     # Content loss
-                    content_loss = 0
-                    for layer in self.content_layers:
-                        target_feature = target_features[layer]
-                        content_feature = content_features[layer].detach()
-                        content_loss += F.mse_loss(target_feature, content_feature)
+                    content_loss = torch.mean((target_features[3] - content_features) ** 2)
 
                     # Style loss
                     style_loss = 0
-                    for layer in self.style_layers:
-                        target_feature = target_features[layer]
-                        target_gram = self.gram_matrix(target_feature)
-                        style_gram = style_grams[layer].detach()
-                        style_loss += F.mse_loss(target_gram, style_gram)
+                    for ft, gm, weight in zip(target_features, style_grams, self.style_weights.values()):
+                        target_gram = self.gram_matrix(ft)
+                        style_loss += weight * torch.mean((target_gram - gm) ** 2)
 
                     # Total loss
-                    total_loss = self.content_weight * content_loss + self.style_weight * style_loss
+                    total_loss = content_weight * content_loss + style_weight * style_loss
 
                     # Compute gradients
                     total_loss.backward()
 
+                    # Print progress
+                    if run[0] % 50 == 0:
+                        print(
+                            f'Step {run[0]}: Style Loss: {style_loss.item():.4f} Content Loss: {content_loss.item():.4f}')
+
+                    run[0] += 1
                     return total_loss
 
-                # Update target image
                 optimizer.step(closure)
 
-            # Deprocess and return final image
+            # Denormalize and convert to image
             with torch.no_grad():
-                final_img = self.deprocess(target)
+                target = self.denormalize(target.squeeze(0).cpu())
+                target = torch.clamp(target, 0, 1)
 
-            return final_img.cpu().squeeze(0)
+            return transforms.ToPILImage()(target)
 
         except Exception as e:
             raise Exception(f"Style transfer failed: {str(e)}")

@@ -4,12 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="774e6cbc-3733-41fe-b57a-1ff2f5835797" name="Changes" comment="second commit">
-      <change afterPath="$PROJECT_DIR$/style_transfer.py" afterDir="false" />
+    <list default="true" id="774e6cbc-3733-41fe-b57a-1ff2f5835797" name="Changes" comment="third commit">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image1.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ml_processor.py" beforeDir="false" afterPath="$PROJECT_DIR$/generate_descriptions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/style_transfer.py" beforeDir="false" afterPath="$PROJECT_DIR$/style_transfer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/style_transfer.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/style_transfer.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -130,7 +129,8 @@
       <workItem from="1738942874453" duration="7407000" />
       <workItem from="1739020751243" duration="1319000" />
       <workItem from="1739119784054" duration="2804000" />
-      <workItem from="1739190993699" duration="5671000" />
+      <workItem from="1739190993699" duration="6940000" />
+      <workItem from="1739200530708" duration="4838000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <option name="closed" value="true" />
@@ -164,18 +164,38 @@
       <option name="project" value="LOCAL" />
       <updated>1738967713465</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="third commit">
+      <option name="closed" value="true" />
+      <created>1739199304076</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1739199304076</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="initial commit" />
     <MESSAGE value="second commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="second commit" />
+    <MESSAGE value="third commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="third commit" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/FlaskProject2$FlaskProject2.coverage" NAME="FlaskProject2 Coverage Results" MODIFIED="1739198879085" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/FlaskProject2$FlaskProject2.coverage" NAME="FlaskProject2 Coverage Results" MODIFIED="1739222781821" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

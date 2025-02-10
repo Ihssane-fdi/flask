@@ -371,18 +371,24 @@ style_transfer_model = StyleTransfer()
 @app.route('/style_transfer')
 def style_transfer_page():
     """Display style transfer page"""
-    artwork_files = []
-    if os.path.exists(app.config['ARTWORK_FOLDER']):
-        artwork_files = [f for f in os.listdir(app.config['ARTWORK_FOLDER'])
-                         if os.path.splitext(f.lower())[1] in app.config['ALLOWED_EXTENSIONS']]
+    try:
+        artwork_files = []
+        if os.path.exists(app.config['ARTWORK_FOLDER']):
+            artwork_files = [f for f in os.listdir(app.config['ARTWORK_FOLDER'])
+                             if os.path.splitext(f.lower())[1] in app.config['ALLOWED_EXTENSIONS']]
 
-    return render_template('style_transfer.html', images=artwork_files)
+        return render_template('style_transfer.html',
+                               images=sorted(artwork_files),
+                               max_file_size=app.config['MAX_CONTENT_LENGTH'] // (1024 * 1024))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/style_transfer', methods=['POST'])
 def apply_style_transfer():
     """Apply style transfer to images"""
     try:
+        # Validate request
         if 'content_image' not in request.form or 'style_image' not in request.form:
             return jsonify({'error': 'Missing required images'}), 400
 
@@ -393,23 +399,32 @@ def apply_style_transfer():
         style_path = os.path.join(app.config['ARTWORK_FOLDER'], style_image)
 
         # Validate files exist
-        if not (os.path.exists(content_path) and os.path.exists(style_path)):
-            return jsonify({'error': 'One or more images not found'}), 404
+        if not os.path.exists(content_path):
+            return jsonify({'error': 'Content image not found'}), 404
+        if not os.path.exists(style_path):
+            return jsonify({'error': 'Style image not found'}), 404
 
-        # Apply style transfer using the instance
-        result = style_transfer_model.style_transfer(content_path, style_path)
+        # Create style transfer instance if not exists
+        if not hasattr(app, 'style_transfer_model'):
+            app.style_transfer_model = StyleTransfer()
 
-        # Convert to PIL Image and save
-        result_img = transforms.ToPILImage()(result)
+        # Apply style transfer
+        result_img = app.style_transfer_model.style_transfer(
+            content_path,
+            style_path,
+            num_steps=300  # Reduced steps for faster processing
+        )
+
+        # Save result
         output_filename = f"style_transfer_{uuid.uuid4().hex[:8]}.png"
         output_path = os.path.join(app.config['ARTWORK_FOLDER'], output_filename)
-        result_img.save(output_path)
+        result_img.save(output_path, 'PNG')
 
         return jsonify({
             'output_image': url_for('static',
                                     filename=f'gallery/artworks/{output_filename}'),
             'filename': output_filename,
-            'message': 'Style transfer complete! The image has been added to your gallery.'
+            'message': 'Style transfer complete!'
         })
 
     except Exception as e:

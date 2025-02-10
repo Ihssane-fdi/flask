@@ -69,15 +69,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Preview functionality
     function updatePreview(selectElement, previewId) {
-        const preview = document.getElementById(previewId);
-        const img = preview.querySelector('img');
-        const selectedImage = selectElement.value;
+    const preview = document.getElementById(previewId);
+    const img = preview.querySelector('img');
+    const selectedImage = selectElement.value;
 
-        if (selectedImage) {
-            img.src = `/static/gallery/artworks/${selectedImage}`;
-            preview.classList.remove('hidden');
-        }
+    if (selectedImage) {
+        img.src = `/static/gallery/artworks/${selectedImage}?t=${new Date().getTime()}`;
+        preview.classList.remove('hidden');
     }
+}
+
 
     // Update previews when selections change
     document.querySelector('[name="content_image"]').addEventListener('change', function() {
@@ -129,3 +130,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+
+
