@@ -56,18 +56,32 @@ def draw():
     with open(filepath, 'wb') as f:
         f.write(base64.b64decode(image_data))
 
-    return jsonify({'image': url_for('static', filename='gallery/artworks/' + filename), 'filename': filename})
+    return redirect(url_for('gallery'))
+
 
 @app.route('/gallery')
 def gallery():
     """Display all saved artwork and visualizations"""
-    artwork_files = os.listdir(app.config['ARTWORK_FOLDER'])
-    artwork_files = [f for f in artwork_files if f.endswith('.png')]
+    try:
+        # Ensure artwork folder exists
+        if not os.path.exists(app.config['ARTWORK_FOLDER']):
+            os.makedirs(app.config['ARTWORK_FOLDER'])
 
-    visualization_files = os.listdir(app.config['VISUALIZATION_FOLDER'])
-    visualization_files = [f for f in visualization_files if f.endswith('.png')]
+        # Get all image files (both PNG and JPG)
+        artwork_files = []
+        if os.path.exists(app.config['ARTWORK_FOLDER']):
+            artwork_files = [f for f in os.listdir(app.config['ARTWORK_FOLDER'])
+                             if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
-    return render_template('gallery.html', artworks=artwork_files, visualizations=visualization_files)
+            # Sort by modification time (newest first)
+            artwork_files.sort(key=lambda x: os.path.getmtime(
+                os.path.join(app.config['ARTWORK_FOLDER'], x)), reverse=True)
+
+        return render_template('gallery.html', artworks=artwork_files)
+    except Exception as e:
+        print(f"Error in gallery route: {str(e)}")
+        return f"Error loading gallery: {str(e)}", 500
+
 
 @app.route('/generate_turtle_art')
 def generate_turtle_art():
@@ -93,15 +107,22 @@ def generate_pygame_art():
 
 @app.route('/delete_artwork/<artwork>', methods=['POST'])
 def delete_artwork(artwork):
-    artwork_path = os.path.join(app.config['ARTWORK_FOLDER'], artwork)
+    """Delete an artwork file from the gallery"""
     try:
-        if os.path.exists(artwork_path):
-            os.remove(artwork_path)
+        if artwork.lower().endswith(('.png', '.jpg', '.jpeg')):
+            filepath = os.path.join(app.config['ARTWORK_FOLDER'], artwork)
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                print(f"Successfully deleted {filepath}")
+                return redirect(url_for('gallery'))
+            else:
+                print(f"File not found: {filepath}")
+                return "File not found", 404
         else:
-            print(f"Artwork not found: {artwork}")
+            return "Invalid file type", 400
     except Exception as e:
-        print(f"Error deleting artwork: {e}")
-    return redirect(url_for('gallery'))
+        print(f"Error deleting artwork: {str(e)}")
+        return f"Error deleting file: {str(e)}", 500
 
 @app.route('/visualization')
 def visualization():
@@ -109,6 +130,11 @@ def visualization():
     dv = DataVisualization()
     plots = dv.get_all_plots()
     return render_template('visualization.html', plots=plots)
+
+
+# Configuration
+app.config['ARTWORK_FOLDER'] = os.path.join('static', 'gallery', 'artworks')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 
 def validate_image(stream):
@@ -121,7 +147,6 @@ def validate_image(stream):
     return '.' + format if format != 'jpeg' else '.jpg'
 
 
-# Add these configurations to your Flask app
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 
@@ -162,7 +187,7 @@ def effects_page():
                     return redirect(request.url)
 
                 file.save(filepath)
-                # Redirect to effects page for this image
+                # Redirect to effects selection page for this image
                 return redirect(url_for('image_effects', image_name=filename))
             except Exception as e:
                 message = f"Error saving file: {str(e)}"
@@ -177,11 +202,14 @@ def effects_page():
         artwork_files = [f for f in os.listdir(app.config['ARTWORK_FOLDER'])
                          if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
 
-    # Create effects instance to get effect descriptions
+    # Get available effects list
     effects_processor = ImageEffects()
     effects_list = {
-        name: {'title': name.capitalize(), 'description': f"Apply {name} effect to your image"}
-        for name in effects_processor.effects.keys()
+        name: {
+            'title': name.capitalize(),
+            'description': effect_data['description']
+        }
+        for name, effect_data in effects_processor.effects.items()
     }
 
     return render_template('effects_select.html',
@@ -189,7 +217,8 @@ def effects_page():
                            effects=effects_list,
                            message=message)
 
-@app.route('/effects/<image_name>')
+
+@app.route('/effects/<image_name>', methods=['GET', 'POST'])
 def image_effects(image_name):
     """Apply effects to a specific image"""
     try:
@@ -200,30 +229,118 @@ def image_effects(image_name):
             print(f"Image not found: {image_path}")
             return "Image not found", 404
 
-        # Verify the image can be opened
-        try:
-            with Image.open(image_path) as img:
-                print(f"Successfully opened image: {image_path}")
-                print(f"Image size: {img.size}")
-                print(f"Image mode: {img.mode}")
-        except Exception as e:
-            print(f"Error verifying image: {str(e)}")
-            return f"Error verifying image: {str(e)}", 500
+        effects_processor = ImageEffects()
 
-        effects = ImageEffects()
-        all_effects = effects.process_image(image_path)
+        if request.method == 'POST':
+            # Get selected effects from form
+            selected_effects = request.form.getlist('effects')
+            if not selected_effects:
+                selected_effects = ['original']
+
+            all_effects = effects_processor.process_image(image_path, selected_effects)
+        else:
+            # On GET request, just show original image and effects selection
+            all_effects = effects_processor.process_image(image_path, ['original'])
 
         if not all_effects:
             return "Error processing image effects", 500
 
+        # Get list of available effects for the form
+        available_effects = {
+            name: {
+                'title': name.capitalize(),
+                'description': effect_data['description']
+            }
+            for name, effect_data in effects_processor.effects.items()
+        }
+
         return render_template('effects.html',
                                effects=all_effects,
+                               available_effects=available_effects,
                                original_image=image_name)
 
     except Exception as e:
         print(f"Error in image_effects: {str(e)}")
         traceback.print_exc()
         return f"Error processing image: {str(e)}", 500
+
+
+@app.route('/save_effect/<image_name>', methods=['POST'])
+def save_effect(image_name):
+    """Save a processed effect as a new image in the gallery"""
+    try:
+        # Get the base64 image and effect name from the form
+        base64_image = request.form.get('image_data')
+        effect_name = request.form.get('effect_name')
+
+        if not base64_image or not effect_name:
+            print("Missing data - Image data or effect name not provided")
+            return jsonify({
+                'success': False,
+                'message': "Missing image data or effect name"
+            }), 400
+
+        # Ensure ARTWORK_FOLDER exists
+        if not os.path.exists(app.config['ARTWORK_FOLDER']):
+            os.makedirs(app.config['ARTWORK_FOLDER'])
+            print(f"Created artwork folder: {app.config['ARTWORK_FOLDER']}")
+
+        # Extract the base64 data after the comma
+        try:
+            base64_data = base64_image.split(',')[1]
+        except IndexError:
+            base64_data = base64_image  # If no prefix exists
+
+        effects_processor = ImageEffects()
+        new_filename, image = effects_processor.save_processed_image(
+            base64_data,
+            image_name,
+            effect_name
+        )
+
+        if not new_filename or not image:
+            print("Failed to process image - new_filename or image is None")
+            return jsonify({
+                'success': False,
+                'message': 'Failed to process image'
+            }), 500
+
+        # Save the new image with full path
+        save_path = os.path.join(app.config['ARTWORK_FOLDER'], new_filename)
+        print(f"Attempting to save image to: {save_path}")
+
+        try:
+            image.save(save_path, 'JPEG', quality=85, optimize=True)
+            print(f"Successfully saved image to: {save_path}")
+
+            # Verify file exists after saving
+            if os.path.exists(save_path):
+                print(f"Verified file exists at: {save_path}")
+                return jsonify({
+                    'success': True,
+                    'message': 'Image saved successfully',
+                    'filename': new_filename
+                })
+            else:
+                print(f"File not found after saving: {save_path}")
+                return jsonify({
+                    'success': False,
+                    'message': 'File not found after saving'
+                }), 500
+
+        except Exception as save_error:
+            print(f"Error saving file to disk: {str(save_error)}")
+            return jsonify({
+                'success': False,
+                'message': f"Error saving file: {str(save_error)}"
+            }), 500
+
+    except Exception as e:
+        print(f"Error in save_effect route: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f"Error saving image: {str(e)}"
+        }), 500
 
 
 # Add these routes to app.py

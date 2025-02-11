@@ -1,5 +1,4 @@
-#image_effects.py
-
+# image_effects.py
 import cv2
 import numpy as np
 from PIL import Image
@@ -11,12 +10,104 @@ import os
 class ImageEffects:
     def __init__(self):
         self.effects = {
-            'original': lambda img: img,
-            'grayscale': self.grayscale,
-            'sepia': self.sepia,
-            'pixelate': self.pixelate,
-            'blur': self.blur
+            'original': {
+                'func': self.compress_image,  # Add compression to original
+                'description': 'Original image without any effects'
+            },
+            'grayscale': {
+                'func': self.grayscale,
+                'description': 'Convert image to black and white'
+            },
+            'sepia': {
+                'func': self.sepia,
+                'description': 'Apply a vintage sepia tone'
+            },
+            'pixelate': {
+                'func': self.pixelate,
+                'description': 'Create a pixelated mosaic effect'
+            },
+            'blur': {
+                'func': self.blur,
+                'description': 'Apply Gaussian blur effect'
+            }
         }
+        self.max_dimension = 1200  # Maximum dimension for any image
+        self.jpeg_quality = 85     # JPEG quality for compression
+
+    def compress_image(self, image):
+        """Compress image to reduce file size"""
+        try:
+            # Convert to RGB if necessary
+            if len(image.shape) == 2:  # Grayscale
+                image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+
+            # Resize if image is too large
+            height, width = image.shape[:2]
+            if max(height, width) > self.max_dimension:
+                scale = self.max_dimension / max(height, width)
+                new_width = int(width * scale)
+                new_height = int(height * scale)
+                image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+
+            return image
+        except Exception as e:
+            print(f"Error in compress_image: {e}")
+            return image
+
+    def process_image(self, image_path, selected_effects=None):
+        """Process image with selected effects and return base64 encoded results"""
+        print(f"Processing image: {image_path}")
+
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"Image file not found: {image_path}")
+
+        try:
+            # Read and compress image initially
+            pil_image = Image.open(image_path)
+            if pil_image.mode != 'RGB':
+                pil_image = pil_image.convert('RGB')
+
+            # Resize if necessary
+            if max(pil_image.size) > self.max_dimension:
+                pil_image.thumbnail((self.max_dimension, self.max_dimension), Image.Resampling.LANCZOS)
+
+            # Convert to numpy array for OpenCV
+            image = np.array(pil_image)
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        except Exception as e:
+            raise ValueError(f"Error loading image: {str(e)}")
+
+        results = {}
+        if not selected_effects:
+            selected_effects = ['original']
+
+        for effect_name in selected_effects:
+            if effect_name in self.effects:
+                try:
+                    # Apply effect
+                    processed = self.effects[effect_name]['func'](image.copy())
+                    # Always compress after effect
+                    processed = self.compress_image(processed)
+                    # Convert back to RGB
+                    processed_rgb = cv2.cvtColor(processed, cv2.COLOR_BGR2RGB)
+                    # Convert to PIL Image
+                    pil_processed = Image.fromarray(processed_rgb)
+
+                    # Save to base64 with compression
+                    buffer = io.BytesIO()
+                    pil_processed.save(buffer, format='JPEG', quality=self.jpeg_quality, optimize=True)
+                    img_str = base64.b64encode(buffer.getvalue()).decode()
+
+                    results[effect_name] = {
+                        'image': img_str,
+                        'title': effect_name.capitalize(),
+                        'description': self.effects[effect_name]['description']
+                    }
+                except Exception as e:
+                    print(f"Error processing {effect_name} effect: {str(e)}")
+                    continue
+
+        return results
 
     def grayscale(self, image):
         try:
@@ -54,49 +145,24 @@ class ImageEffects:
             print(f"Error in blur effect: {e}")
             return image
 
-    def process_image(self, image_path):
-        """Process image with all effects and return base64 encoded results"""
-        print(f"Processing image: {image_path}")
-
-        if not os.path.exists(image_path):
-            raise FileNotFoundError(f"Image file not found: {image_path}")
-
+    def save_processed_image(self, base64_image, original_filename, effect_name):
+        """Save a processed image from base64 string to the gallery"""
         try:
-            # Read image using PIL first
-            pil_image = Image.open(image_path)
-            # Convert to RGB if necessary
-            if pil_image.mode != 'RGB':
-                pil_image = pil_image.convert('RGB')
-            # Convert to numpy array for OpenCV processing
-            image = np.array(pil_image)
-            # Convert from RGB to BGR for OpenCV
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            # Decode base64 string
+            image_data = base64.b64decode(base64_image)
+
+            # Create image from binary data
+            image = Image.open(io.BytesIO(image_data))
+
+            # Compress if necessary
+            if max(image.size) > self.max_dimension:
+                image.thumbnail((self.max_dimension, self.max_dimension), Image.Resampling.LANCZOS)
+
+            # Generate new filename with effect name
+            filename_without_ext = os.path.splitext(original_filename)[0]
+            new_filename = f"{filename_without_ext}_{effect_name}.jpg"  # Changed to jpg
+
+            return new_filename, image
         except Exception as e:
-            raise ValueError(f"Error loading image: {str(e)}")
-
-        results = {}
-        for effect_name, effect_func in self.effects.items():
-            try:
-                # Apply effect
-                processed = effect_func(image.copy())
-                # Convert back to RGB
-                processed_rgb = cv2.cvtColor(processed, cv2.COLOR_BGR2RGB)
-                # Convert to PIL Image
-                pil_processed = Image.fromarray(processed_rgb)
-
-                # Save to base64
-                buffer = io.BytesIO()
-                pil_processed.save(buffer, format='PNG')
-                img_str = base64.b64encode(buffer.getvalue()).decode()
-
-                results[effect_name] = {
-                    'image': img_str,
-                    'title': effect_name.capitalize(),
-                    'description': f"{effect_name.capitalize()} effect applied to the image"
-                }
-            except Exception as e:
-                print(f"Error processing {effect_name} effect: {str(e)}")
-                continue
-
-        return results
- #
+            print(f"Error saving processed image: {e}")
+            return None, None

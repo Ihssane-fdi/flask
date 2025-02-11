@@ -3,21 +3,57 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-8 text-center">Image Effects Gallery</h1>
-    
+
+    <!-- Effect Selection Form -->
+    <div class="mb-8 bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold mb-4">Select Effects</h2>
+        <form action="{{ url_for('image_effects', image_name=original_image) }}" method="post" class="space-y-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {% for effect_name, effect_data in available_effects.items() %}
+                <div class="flex items-start space-x-2">
+                    <input type="checkbox"
+                           name="effects"
+                           value="{{ effect_name }}"
+                           id="{{ effect_name }}"
+                           class="mt-1">
+                    <label for="{{ effect_name }}" class="flex-1">
+                        <div class="font-semibold">{{ effect_data.title }}</div>
+                        <div class="text-sm text-gray-600">{{ effect_data.description }}</div>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="flex justify-center mt-6">
+                <button type="submit"
+                        class="bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600">
+                    Apply Selected Effects
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Effects Gallery -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for effect_name, effect_data in effects.items() %}
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <img src="data:image/png;base64,{{ effect_data.image }}" 
+            <img src="data:image/png;base64,{{ effect_data.image }}"
                  alt="{{ effect_data.title }}"
                  class="w-full h-64 object-cover">
             <div class="p-4">
                 <h2 class="text-xl font-semibold mb-2">{{ effect_data.title }}</h2>
-                <p class="text-gray-600">{{ effect_data.description }}</p>
+                <p class="text-gray-600 mb-4">{{ effect_data.description }}</p>
+                <button onclick="saveEffect('{{ effect_data.image }}', '{{ effect_name }}', '{{ original_image }}')"
+                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full">
+                    Save to Gallery
+                </button>
+                <div id="save-status-{{ effect_name }}" class="mt-2 text-center hidden">
+                    <!-- Status message will appear here -->
+                </div>
             </div>
         </div>
         {% endfor %}
     </div>
-    
+
     <div class="mt-8 text-center space-x-4">
         <a href="{{ url_for('effects_page') }}"
            class="bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600">
@@ -28,6 +64,43 @@
             Back to Gallery
         </a>
     </div>
+
+   <script>
+    function saveEffect(imageData, effectName, originalImage) {
+        const statusDiv = document.getElementById(`save-status-${effectName}`);
+        statusDiv.innerHTML = 'Saving...';
+        statusDiv.className = 'mt-2 text-center text-blue-600';
+        statusDiv.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('image_data', `data:image/jpeg;base64,${imageData}`);
+        formData.append('effect_name', effectName);
+
+        fetch(`/save_effect/${originalImage}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                statusDiv.innerHTML = 'Saved successfully!';
+                statusDiv.className = 'mt-2 text-center text-green-600';
+            } else {
+                statusDiv.innerHTML = data.message || 'Error saving image';
+                statusDiv.className = 'mt-2 text-center text-red-600';
+            }
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        })
+        .catch(error => {
+            statusDiv.innerHTML = 'Error saving image';
+            statusDiv.className = 'mt-2 text-center text-red-600';
+            console.error('Error:', error);
+        });
+    }
+    </script>
+
 </div>
 {% endblock %}
 
