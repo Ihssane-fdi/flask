@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Drawing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            height: 100vh;
+            background-color: #D7E8FF;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #333;
+        }
+
+        #canvas {
+            border: 2px solid #333;
+            background: white;
+            cursor: crosshair;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        .btn.clear { background-color: #ff6b6b; }
+        .btn.save { background-color: #4caf50; }
+        .btn.back { background-color: #f39c12; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Free Drawing</h1>
+
+        <label for="color">Choose Color:</label>
+        <input type="color" id="color" value="#000000">
+
+        <canvas id="canvas" width="400" height="400"></canvas>
+
+        <button class="btn clear" onclick="clearCanvas()">🧹 Clear</button>
+        <button class="btn save" onclick="saveDrawing()">💾 Save to Gallery</button>
+        <button class="btn back" onclick="window.location.href='/home'">⬅️ Back</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let drawing = false;
+
+        canvas.addEventListener("mousedown", () => drawing = true);
+        canvas.addEventListener("mouseup", () => {
+            drawing = false;
+            ctx.beginPath();
+        });
+        canvas.addEventListener("mousemove", draw);
+
+        function draw(event) {
+            if (!drawing) return;
+            ctx.strokeStyle = document.getElementById("color").value;
+            ctx.lineWidth = 3;
+            ctx.lineCap = "round";
+
+            ctx.lineTo(event.offsetX, event.offsetY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(event.offsetX, event.offsetY);
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function saveDrawing() {
+            const imageData = canvas.toDataURL();
+
+            fetch("/save-drawing", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({ image: imageData }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Drawing saved!");
+                    window.location.href = "/gallery";
+                } else {
+                    alert("Failed to save drawing.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+
+</body>
+</html>

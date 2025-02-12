@@ -60,7 +60,32 @@ def draw():
 
     return redirect(url_for('gallery'))
 
+@app.route('/free-draw')
+def free_draw():
+    """Render the free drawing page"""
+    return render_template('free_draw.html')
 
+@app.route('/save-drawing', methods=['POST'])
+def save_drawing():
+    """Save canvas drawing to the gallery"""
+    try:
+        image_data = request.form.get('image')
+        if not image_data:
+            return "No image data received", 400
+
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f'drawing_{timestamp}.png'
+        filepath = os.path.join(app.config['ARTWORK_FOLDER'], filename)
+
+        with open(filepath, 'wb') as f:
+            f.write(base64.b64decode(image_data))
+
+        return redirect(url_for('gallery'))
+    except Exception as e:
+        return f"Error saving drawing: {str(e)}", 500
 @app.route('/gallery')
 def gallery():
     """Display all saved artwork and visualizations"""
