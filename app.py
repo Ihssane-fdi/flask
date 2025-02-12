@@ -34,9 +34,11 @@ os.makedirs(app.config['VISUALIZATION_FOLDER'], exist_ok=True)
 app.config['DEFAULT_IMAGE'] = os.path.join(app.root_path, 'static', 'default.jpg')  # Add this line
 
 @app.route('/')
+def welcome():
+    return render_template('welcome.html')
+@app.route('/home')
 def home():
     return render_template('index.html')
-
 @app.route('/draw')
 def draw():
     """Launch the Pygame drawing tool"""

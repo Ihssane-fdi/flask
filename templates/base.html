@@ -1,4 +1,3 @@
-{# base.html #}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,36 +5,303 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Art Gallery</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <style>
+        body {
+            background: linear-gradient(to bottom, #e6eeff, #ffd6e6);
+            color: #5a4444;
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 192, 203, 0.5);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #e392a5;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .button-effect {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .button-effect:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(255, 182, 193, 0.3);
+        }
+
+        .button-effect::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+        }
+
+        .button-effect:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .stars {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            box-shadow:
+                0 0 4px #fff,
+                0 0 8px #fff,
+                0 0 12px #ff8fab;
+            animation: twinkle var(--duration) infinite ease-in-out;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            animation: float var(--duration) infinite ease-in-out;
+            filter: blur(4px);
+        }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-100%) translateY(0); }
+            50% { transform: translateX(50vw) translateY(-20px); }
+            100% { transform: translateX(100vw) translateY(0); }
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 150px;
+            height: 2px;
+            background: linear-gradient(90deg, white, transparent);
+            box-shadow: 0 0 20px #ffffff;
+            animation: shoot 3s infinite ease-out;
+            opacity: 10000;
+        }
+
+        @keyframes shoot {
+            0% {
+                transform: translateX(-100%) translateY(0) rotate(-45deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(200%) translateY(300%) rotate(-45deg);
+                opacity: 0;
+            }
+        }
+
+        .sparkle-button {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sparkle-button::after {
+            content: '✨';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 24px;
+            opacity: 100;
+            transition: all 0.3s ease;
+        }
+
+        .sparkle-button:hover::after {
+            opacity: 1;
+            transform: translate(-20px, 20px) rotate(15deg);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 182, 193, 0.5);
+            box-shadow:
+                0 10px 20px rgba(255, 182, 193, 0.2),
+                0 0 15px rgba(255, 182, 193, 0.3);
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="flex justify-between">
-                <div class="flex space-x-7">
-                    <a href="/" class="flex items-center py-4 px-2">
-                        <span class="font-semibold text-gray-500 text-lg">Art Gallery</span>
-                    </a>
-                    <div class="flex items-center space-x-1">
-                        <a href="/draw" class="py-4 px-2 text-gray-500 hover:text-gray-900">Draw</a>
-                        <a href="/gallery" class="py-4 px-2 text-gray-500 hover:text-gray-900">Gallery</a>
-                        <a href="/effects" class="py-4 px-2 text-gray-500 hover:text-gray-900">Image Effects</a>
-                        <a href="/generate_turtle_art" class="py-4 px-2 text-gray-500 hover:text-gray-900">Generate Turtle Art</a>
-                        <a href="/generate_pygame_art" class="py-4 px-2 text-gray-500 hover:text-gray-900">Generate Pygame Art</a>
-                        <a href="/visualization" class="py-4 px-2 text-gray-500 hover:text-gray-900">Data Visualizations</a>
-                        <a href="/audio" class="py-4 px-2 text-gray-500 hover:text-gray-900">Audio Processing</a>
-                        <a href="/style_transfer" class="py-4 px-2 text-gray-500 hover:text-gray-900">Style Transfer</a>
-                        <a href="/generate_descriptions" class="py-4 px-2 text-gray-500 hover:text-gray-900">Generate Descriptions</a>
-                    </div>
-                </div>
+<body>
+    <!-- Background Elements -->
+    <div class="stars" id="starsContainer"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar fixed top-0 w-full z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <a href="/" class="text-2xl font-bold text-pink-500 hover:text-pink-400 transition-colors sparkle-button">
+                ✨ Art Gallery
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="/draw" class="nav-link button-effect text-gray-700 hover:text-pink-500 px-4 py-2 rounded-lg">🎨 Draw
+                    <span class="absolute bottom-0 left-0 w-full h-0.5 bg-pink-400 transform scale-x-0 transition-transform origin-left hover:scale-x-100"></span>
+                </a>
+                <a href="/gallery" class="nav-link button-effect text-gray-700 hover:text-pink-500 px-4 py-2 rounded-lg">🖼️ Gallery
+                    <span class="absolute bottom-0 left-0 w-full h-0.5 bg-pink-400 transform scale-x-0 transition-transform origin-left hover:scale-x-100"></span>
+                </a>
+                <a href="/effects" class="nav-link button-effect text-gray-700 hover:text-pink-500 px-4 py-2 rounded-lg">✨ Effects
+                    <span class="absolute bottom-0 left-0 w-full h-0.5 bg-pink-400 transform scale-x-0 transition-transform origin-left hover:scale-x-100"></span>
+                </a>
+                <a href="/generate_turtle_art" class="nav-link button-effect text-gray-700 hover:text-pink-500 px-4 py-2 rounded-lg">🐢 Turtle Art
+                    <span class="absolute bottom-0 left-0 w-full h-0.5 bg-pink-400 transform scale-x-0 transition-transform origin-left hover:scale-x-100"></span>
+                </a>
+                <a href="/generate_pygame_art" class="nav-link button-effect text-gray-700 hover:text-pink-500 px-4 py-2 rounded-lg">🎮 Pygame Art
+                    <span class="absolute bottom-0 left-0 w-full h-0.5 bg-pink-400 transform scale-x-0 transition-transform origin-left hover:scale-x-100"></span>
+                </a>
+                <a href="/visualization" class="nav-link button-effect text-gray-700 hover:text-pink-500 px-4 py-2 rounded-lg">📊 Data Art
+                    <span class="absolute bottom-0 left-0 w-full h-0.5 bg-pink-400 transform scale-x-0 transition-transform origin-left hover:scale-x-100"></span>
+                </a>
+                <a href="/audio" class="nav-link button-effect text-gray-700 hover:text-pink-500 px-4 py-2 rounded-lg">🎵 Audio
+                    <span class="absolute bottom-0 left-0 w-full h-0.5 bg-pink-400 transform scale-x-0 transition-transform origin-left hover:scale-x-100"></span>
+                </a>
+                <a href="/style_transfer" class="nav-link button-effect text-gray-700 hover:text-pink-500 px-4 py-2 rounded-lg">🎭 Style Transfer
+                    <span class="absolute bottom-0 left-0 w-full h-0.5 bg-pink-400 transform scale-x-0 transition-transform origin-left hover:scale-x-100"></span>
+                </a>
+                <a href="/generate_descriptions" class="nav-link button-effect text-gray-700 hover:text-pink-500 px-4 py-2 rounded-lg">📝 Descriptions
+                    <span class="absolute bottom-0 left-0 w-full h-0.5 bg-pink-400 transform scale-x-0 transition-transform origin-left hover:scale-x-100"></span>
+                </a>
             </div>
+            <button class="md:hidden text-gray-700 hover:text-pink-500 focus:outline-none">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
         </div>
     </nav>
 
-    <main class="container mx-auto px-4 py-8">
+    <!-- Mobile Menu -->
+    <div class="hidden md:hidden fixed top-16 right-0 left-0 z-50 bg-white bg-opacity-95 backdrop-blur-md">
+        <div class="px-4 py-2 space-y-3">
+            <a href="/draw" class="block text-gray-700 hover:text-pink-500 py-2">🎨 Draw</a>
+            <a href="/gallery" class="block text-gray-700 hover:text-pink-500 py-2">🖼️ Gallery</a>
+            <a href="/effects" class="block text-gray-700 hover:text-pink-500 py-2">✨ Effects</a>
+            <a href="/generate_turtle_art" class="block text-gray-700 hover:text-pink-500 py-2">🐢 Turtle Art</a>
+            <a href="/generate_pygame_art" class="block text-gray-700 hover:text-pink-500 py-2">🎮 Pygame Art</a>
+            <a href="/visualization" class="block text-gray-700 hover:text-pink-500 py-2">📊 Data Art</a>
+            <a href="/audio" class="block text-gray-700 hover:text-pink-500 py-2">🎵 Audio</a>
+            <a href="/style_transfer" class="block text-gray-700 hover:text-pink-500 py-2">🎭 Style Transfer</a>
+            <a href="/generate_descriptions" class="block text-gray-700 hover:text-pink-500 py-2">📝 Descriptions</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 pt-24 pb-12 relative z-10">
         {% block content %}{% endblock %}
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const starsContainer = document.getElementById('starsContainer');
+
+            // Create stars
+            for (let i = 0; i < 300; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 3 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+                starsContainer.appendChild(star);
+            }
+
+            // Create clouds
+            for (let i = 0; i < 5; i++) {
+                createCloud();
+            }
+
+            // Periodically create new clouds
+            setInterval(createCloud, 10000);
+
+            // Mobile menu toggle
+            const menuButton = document.querySelector('.md\\:hidden');
+            const mobileMenu = document.querySelector('.hidden.md\\:hidden');
+
+            menuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            function createCloud() {
+            const starsContainer = document.getElementById('starsContainer');
+            const cloud = document.createElement('div');
+            cloud.className = 'cloud';
+            cloud.style.width = (Math.random() * 100 + 100) + 'px';
+            cloud.style.height = (Math.random() * 30 + 20) + 'px';
+            cloud.style.top = (Math.random() * 40) + '%';
+            cloud.style.setProperty('--duration', (Math.random() * 20 + 20) + 's');
+            starsContainer.appendChild(cloud);
+
+            // Remove cloud after animation
+            setTimeout(() => {
+                cloud.remove();
+            }, 25000);
+        }
+        // Create shooting stars
+            setInterval(() => {
+                const shootingStar = document.createElement('div');
+                shootingStar.className = 'shooting-star';
+                shootingStar.style.left = Math.random() * 100 + '%';
+                shootingStar.style.top = Math.random() * 50 + '%';
+                starsContainer.appendChild(shootingStar);
+
+                setTimeout(() => {
+                    shootingStar.remove();
+                }, 3000);
+            }, 4000);
+        });
+
+
+    </script>
 </body>
 </html>
-
-

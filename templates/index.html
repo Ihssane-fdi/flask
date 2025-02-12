@@ -4,66 +4,67 @@
 <div class="text-center">
     <h1 class="text-4xl font-bold mb-8">Interactive Art Gallery</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
             <h2 class="text-xl font-semibold mb-4">Drawing Tool</h2>
             <p class="text-gray-600 mb-4">Create your own artwork using our interactive drawing tool!</p>
-            <a href="/draw" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Start Drawing</a>
+            <a href="/draw" class="button-effect inline-block bg-pink-400 text-white px-6 py-2 rounded-lg hover:bg-pink-500">
+        Start Drawing</a>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
             <h2 class="text-xl font-semibold mb-4">Gallery</h2>
             <p class="text-gray-600 mb-4">View the collection of artwork created by our users.</p>
-            <a href="/gallery" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">View Gallery</a>
+            <a href="/gallery" class="button-effect inline-block bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">View Gallery</a>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
             <h2 class="text-xl font-semibold mb-4">Image Effects</h2>
             <p class="text-gray-600 mb-4">Apply various effects to transform your images.</p>
-            <a href="{{ url_for('effects_page') }}" class="bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600">Try Effects</a>
+            <a href="{{ url_for('effects_page') }}" class="button-effect inline-block bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600">Try Effects</a>
         </div>
     </div>
     <div class="mt-8">
         <h2 class="text-2xl font-bold mb-4">Generate Art</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
                 <h3 class="text-lg font-semibold mb-4">Turtle Art</h3>
                 <p class="text-gray-600 mb-4">Generate random art using the Turtle module.</p>
-                <a href="/generate_turtle_art" class="bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600">Generate Turtle Art</a>
+                <a href="/generate_turtle_art" class="button-effect inline-block bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600">Generate Turtle Art</a>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
                 <h3 class="text-lg font-semibold mb-4">Pygame Art</h3>
                 <p class="text-gray-600 mb-4">Generate random art using the Pygame module.</p>
-                <a href="/generate_pygame_art" class="bg-indigo-500 text-white px-6 py-2 rounded hover:bg-indigo-600">Generate Pygame Art</a>
+                <a href="/generate_pygame_art" class="button-effect inline-block bg-indigo-500 text-white px-6 py-2 rounded hover:bg-indigo-600">Generate Pygame Art</a>
             </div>
         </div>
     </div>
     <div class="mt-8">
         <h2 class="text-2xl font-bold mb-4">Interactive Tools</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
                 <h3 class="text-lg font-semibold mb-4">Happiness Data</h3>
                 <p class="text-gray-600 mb-4">Explore interactive data visualizations about world happiness.</p>
-                <a href="/visualization" class="bg-indigo-800 text-white px-6 py-2 rounded hover:bg-indigo-600">View Visualizations</a>
+                <a href="/visualization" class="button-effect inline-block bg-indigo-800 text-white px-6 py-2 rounded hover:bg-indigo-600">View Visualizations</a>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
                 <h3 class="text-lg font-semibold mb-4">Audio Processing</h3>
                 <p class="text-gray-600 mb-4">Transform and modify audio files with various effects.</p>
-                <a href="/audio" class="bg-pink-600 text-white px-6 py-2 rounded hover:bg-pink-700">Process Audio</a>
+                <a href="/audio" class="button-effect inline-block bg-pink-600 text-white px-6 py-2 rounded hover:bg-pink-700">Process Audio</a>
             </div>
         </div>
     </div>
     <div class="mb-12">
         <h2 class="text-2xl font-semibold mb-6">Machine Learning</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+            <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
                 <h3 class="text-xl font-semibold mb-4">Style Transfer</h3>
                 <p class="mb-4">Apply artistic styles to your images using advanced machine learning techniques.</p>
-                <a href="/style_transfer" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                <a href="/style_transfer" class="button-effect inline-block bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
                     Go to Style Transfer
                 </a>
             </div>
-            <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+            <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
                 <h3 class="text-xl font-semibold mb-4">Generate Descriptions</h3>
                 <p class="mb-4">Generate detailed descriptions of your artwork using AI-powered text generation.</p>
-                <a href="/generate_descriptions" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
+                <a href="/generate_descriptions" class="button-effect inline-block bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
                     Go to Description Generator
                 </a>
             </div>
@@ -71,5 +72,4 @@
     </div>
 </div>
 {% endblock %}
-
 
