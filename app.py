@@ -1,4 +1,3 @@
-#app.py
 import uuid
 import pygame
 from flask import Flask, render_template, request, jsonify, send_file, url_for, redirect
@@ -27,21 +26,21 @@ app = Flask(__name__)
 app.config['ARTWORK_FOLDER'] = os.path.join(app.root_path, 'static', 'gallery', 'artworks')
 app.config['VISUALIZATION_FOLDER'] = os.path.join(app.root_path, 'static', 'gallery', 'visualizations')
 
-# Ensure upload folders exist
 os.makedirs(app.config['ARTWORK_FOLDER'], exist_ok=True)
 os.makedirs(app.config['VISUALIZATION_FOLDER'], exist_ok=True)
 
-app.config['DEFAULT_IMAGE'] = os.path.join(app.root_path, 'static', 'default.jpg')  # Add this line
+app.config['DEFAULT_IMAGE'] = os.path.join(app.root_path, 'static', 'default.jpg')
 
 @app.route('/')
 def welcome():
     return render_template('welcome.html')
+
 @app.route('/home')
 def home():
     return render_template('index.html')
+
 @app.route('/draw')
 def draw():
-    """Launch the Pygame drawing tool"""
     drawing_tool = DrawingTool()
     image_data = drawing_tool.run_tool()
 
@@ -62,12 +61,10 @@ def draw():
 
 @app.route('/free-draw')
 def free_draw():
-    """Render the free drawing page"""
     return render_template('free_draw.html')
 
 @app.route('/save-drawing', methods=['POST'])
 def save_drawing():
-    """Save canvas drawing to the gallery"""
     try:
         image_data = request.form.get('image')
         if not image_data:
@@ -86,9 +83,9 @@ def save_drawing():
         return redirect(url_for('gallery'))
     except Exception as e:
         return f"Error saving drawing: {str(e)}", 500
+
 @app.route('/gallery')
 def gallery():
-    """Display all saved artwork and visualizations"""
     try:
         # Ensure artwork folder exists
         if not os.path.exists(app.config['ARTWORK_FOLDER']):
@@ -108,7 +105,6 @@ def gallery():
     except Exception as e:
         print(f"Error in gallery route: {str(e)}")
         return f"Error loading gallery: {str(e)}", 500
-
 
 @app.route('/generate_turtle_art')
 def generate_turtle_art():
@@ -159,7 +155,6 @@ def visualization():
     return render_template('visualization.html', plots=plots)
 
 
-# Configuration
 app.config['ARTWORK_FOLDER'] = os.path.join('static', 'gallery', 'artworks')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
@@ -173,14 +168,11 @@ def validate_image(stream):
         return None
     return '.' + format if format != 'jpeg' else '.jpg'
 
-
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
 
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 @app.route('/effects', methods=['GET', 'POST'])
 def effects_page():
@@ -244,7 +236,6 @@ def effects_page():
                            effects=effects_list,
                            message=message)
 
-
 @app.route('/effects/<image_name>', methods=['GET', 'POST'])
 def image_effects(image_name):
     """Apply effects to a specific image"""
@@ -291,7 +282,6 @@ def image_effects(image_name):
         traceback.print_exc()
         return f"Error processing image: {str(e)}", 500
 
-
 @app.route('/save_effect/<image_name>', methods=['POST'])
 def save_effect(image_name):
     """Save a processed effect as a new image in the gallery"""
@@ -316,7 +306,7 @@ def save_effect(image_name):
         try:
             base64_data = base64_image.split(',')[1]
         except IndexError:
-            base64_data = base64_image  # If no prefix exists
+            base64_data = base64_image
 
         effects_processor = ImageEffects()
         new_filename, image = effects_processor.save_processed_image(
@@ -369,18 +359,13 @@ def save_effect(image_name):
             'message': f"Error saving image: {str(e)}"
         }), 500
 
-
-# Add these routes to app.py
-
 app.config['AUDIO_FOLDER'] = os.path.join(app.root_path, 'static', 'audio')
 audio_processor = AudioProcessor(app.config['AUDIO_FOLDER'])
-
 
 @app.route('/audio')
 def audio_page():
     audio_files = audio_processor.get_audio_files()
     return render_template('audio.html', audio_files=audio_files)
-
 
 @app.route('/process_audio', methods=['POST'])
 def process_audio():
@@ -415,7 +400,6 @@ def process_audio():
 
     return redirect(url_for('audio_page'))
 
-
 @app.route('/layer_audio', methods=['POST'])
 def layer_audio():
     file_ids = request.form.getlist('audio_files')
@@ -433,7 +417,6 @@ def layer_audio():
     output_filename = audio_processor.layer_audio(file_ids, effects_list)
     return redirect(url_for('audio_page'))
 
-
 @app.route('/save_modified/<filename>')
 def save_modified(filename):
     preview_path = os.path.join(app.config['AUDIO_FOLDER'], 'previews', filename)
@@ -447,7 +430,6 @@ def save_modified(filename):
         audio.export(new_path, format="wav")
 
     return redirect(url_for('audio_page'))
-
 
 @app.route('/delete_audio/<path:filename>')
 def delete_audio(filename):
@@ -473,8 +455,6 @@ def delete_audio(filename):
 
 ml_processor = MLProcessor(app)
 
-
-# Add these routes to app.py
 @app.route('/generate_descriptions')
 def generate_descriptions_page():
     """Display description generation page"""
@@ -498,19 +478,16 @@ def generate_description(image_name):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 app.config.update(dict(
     ARTWORK_FOLDER=os.path.join(app.static_folder, 'gallery', 'artworks'),
     MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max file size
     ALLOWED_EXTENSIONS={'.png', '.jpg', '.jpeg'}
 ))
 
-
 # Ensure upload folder exists
 os.makedirs(app.config['ARTWORK_FOLDER'], exist_ok=True)
 # Initialize style transfer instance
 style_transfer_model = StyleTransfer()
-
 
 @app.route('/style_transfer')
 def style_transfer_page():

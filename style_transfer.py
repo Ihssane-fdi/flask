@@ -4,11 +4,9 @@ import torchvision.transforms as transforms
 import torchvision.models as models
 from PIL import Image
 from torch.cuda.amp import autocast, GradScaler
-import os
 import warnings
 
 warnings.filterwarnings("ignore")
-
 
 class StyleTransferModel(nn.Module):
     def __init__(self):

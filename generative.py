@@ -1,5 +1,3 @@
-#generative.py
-
 from PIL import Image, ImageDraw
 import random
 import os
@@ -47,7 +45,6 @@ def turtle_art_image(artwork_folder):
 
 
 def pygame_art_image(artwork_folder):
-    """Generate a pygame-style generative art image and save it."""
     try:
         print("Generating Pygame Art...")
         width, height = 800, 600
@@ -68,10 +65,9 @@ def pygame_art_image(artwork_folder):
             elif shape == 'square':
                 draw.rectangle([x - size, y - size, x + size, y + size], fill=color)
 
-        # Ensure the artwork folder exists
+
         os.makedirs(artwork_folder, exist_ok=True)
 
-        # Save the generated image
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f'pygame_art_{timestamp}.png'
         file_path = os.path.join(artwork_folder, filename)

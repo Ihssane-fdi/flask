@@ -1,8 +1,8 @@
-{# visualization.html #}
 {% extends "base.html" %}
 {% block content %}
 <div class="max-w-6xl mx-auto">
-    <h1 class="text-3xl font-bold mb-8">Data Visualization</h1>
+    <div class="mt-14">
+    <h1 class="text-4xl font-bold mb-10 text-center">Data Visualization</h1>
 
     {% if error %}
     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
@@ -42,6 +42,7 @@
                 {{ plots.animated_scatter_plot | safe }}
             </div>
         </div>
+    </div>
     </div>
 </div>
 {% endblock %}

@@ -46,7 +46,6 @@ class AudioProcessor:
 
         modified = audio
 
-        # Apply trim effect first if specified
         if 'trim_start' in effects and effects['trim_start'] > 0:
             start_ms = effects['trim_start']
             if start_ms < len(modified):

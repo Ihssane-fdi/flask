@@ -1,5 +1,3 @@
-#visualization.py
-
 import pandas as pd
 import plotly.express as px
 
@@ -69,7 +67,7 @@ class DataVisualization:
             return None
 
         df_new = self.df.copy()
-        df_new["Year"] = 2020  # Add a fictitious year if you only have one year
+        df_new["Year"] = 2020
 
         fig = px.scatter(
             df_new,
@@ -77,7 +75,7 @@ class DataVisualization:
             y="Score",
             size="Score",
             color="Country or region",
-            animation_frame="Year",  # Now "Year" exists
+            animation_frame="Year",
             title="Happiness Evolution Over Years"
         )
         return fig.to_html(full_html=False)
@@ -95,4 +93,4 @@ class DataVisualization:
         except Exception as e:
             print(f"Error creating plots: {e}")
             return None
- #
+

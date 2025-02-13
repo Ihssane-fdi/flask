@@ -1,8 +1,8 @@
-{# gallery.html #}
 {% extends "base.html" %}
 {% block content %}
 <div class="container mx-auto px-4">
-    <h1 class="text-3xl font-bold mb-8 text-center">Art Gallery</h1>
+  <div class="mt-14">
+    <h1 class="text-5xl font-bold mb-10 text-center">Art Gallery</h1>
 
     <!-- Modal -->
     <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
@@ -19,8 +19,8 @@
     </div>
 
     {% if artworks %}
-        <div class="mb-12">
-            <h2 class="text-2xl font-semibold mb-6">Artwork Collection</h2>
+
+            <h2 class="text-3xl font-semibold mb-8">Artwork Collection</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for artwork in artworks %}
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -48,14 +48,15 @@
                 </div>
                 {% endfor %}
             </div>
-        </div>
+
     {% else %}
         <p class="text-center text-gray-600">No artwork available yet.</p>
     {% endif %}
 
     <div class="mt-8 text-center">
-        <a href="/" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Back to Home</a>
+        <a href="/" class="text-xl bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Back to Home</a>
     </div>
+  </div>
 </div>
 
 <script>

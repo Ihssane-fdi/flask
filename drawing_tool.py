@@ -1,11 +1,8 @@
-#drawing_tool.py
-
 import pygame
 import random
 import base64
 import io
 from PIL import Image
-import sys
 
 
 class Shape:
@@ -99,8 +96,6 @@ class DrawingTool:
         image_base64 = base64.b64encode(buffer.getvalue()).decode()
         return image_base64
 
-    import pygame
-    import sys
 
     def run_tool(self):
         running = True
@@ -154,7 +149,7 @@ class DrawingTool:
                         self.shapes.clear()
 
             # Draw save button
-            pygame.draw.rect(self.screen, (0, 255, 0), (50, 400, 100, 50))  # Green save button
+            pygame.draw.rect(self.screen, (0, 255, 0), (50, 400, 100, 50))
             font = pygame.font.Font(None, 36)
             text = font.render("Save", True, (0, 0, 0))
             self.screen.blit(text, (75, 415))

@@ -1,14 +1,19 @@
-{# index.html #}
 {% extends "base.html" %}
 {% block content %}
 <div class="text-center">
-    <h1 class="text-4xl font-bold mb-8">Interactive Art Gallery</h1>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="mt-12">
+    <h1 class="text-4xl font-bold mb-8">Main Gallery</h1>
+    <div class="grid grid-cols-1 gap-6">
         <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
             <h2 class="text-xl font-semibold mb-4">Gallery</h2>
             <p class="text-gray-600 mb-4">View the collection of artwork created by our users.</p>
             <a href="/gallery" class="button-effect inline-block bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">View Gallery</a>
         </div>
+    </div>
+    </div>
+    <div class="mt-8">
+    <h1 class="text-4xl font-bold mb-8">Interactive Art Gallery</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
             <h2 class="text-xl font-semibold mb-4">Drawing Tool</h2>
             <p class="text-gray-600 mb-4">Create your own artwork using our interactive drawing tool!</p>
@@ -27,8 +32,9 @@
             <a href="{{ url_for('effects_page') }}" class="button-effect inline-block bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600">Try Effects</a>
         </div>
     </div>
+    </div>
     <div class="mt-8">
-        <h2 class="text-2xl font-bold mb-4">Generate Art</h2>
+        <h2 class="text-4xl font-bold mb-8">Generate Art</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
                 <h3 class="text-lg font-semibold mb-4">Turtle Art</h3>
@@ -43,7 +49,7 @@
         </div>
     </div>
     <div class="mt-8">
-        <h2 class="text-2xl font-bold mb-4">Interactive Tools</h2>
+        <h2 class="text-4xl font-bold mb-8">Interactive Tools</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
                 <h3 class="text-lg font-semibold mb-4">Happiness Data</h3>
@@ -57,8 +63,8 @@
             </div>
         </div>
     </div>
-    <div class="mb-12">
-        <h2 class="text-2xl font-semibold mb-6">Machine Learning</h2>
+    <div class="mt-8">
+        <h2 class="text-4xl font-bold mb-8">Machine Learning</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="card-hover bg-white bg-opacity-90 p-6 rounded-lg shadow-md">
                 <h3 class="text-xl font-semibold mb-4">Style Transfer</h3>
